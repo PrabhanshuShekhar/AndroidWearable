@@ -4,9 +4,11 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -40,35 +42,49 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MainActivity extends ActionBarActivity implements DataApi.DataListener,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends ActionBarActivity {
 
     ArcProgress arcProgress;
     ImageView alarmIV;
     Timer timer, timerDweetPost;
     double currentTemp;
     GoogleApiClient mGoogleApiClient;
+    private static final String TAG = "PhoneActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        arcProgress = (ArcProgress)findViewById(R.id.arc_progress);
-        alarmIV = ( ImageView)findViewById(R.id.alarmIV);
+        arcProgress = (ArcProgress) findViewById(R.id.arc_progress);
+        alarmIV = (ImageView) findViewById(R.id.alarmIV);
         arcProgress.setStrokeWidth(40);
         arcProgress.setUnfinishedStrokeColor(Color.parseColor("#A9A9A9"));
         arcProgress.setTextSize(40);
         arcProgress.setBackgroundColor(Color.TRANSPARENT);
-        mGoogleApiClient  = new GoogleApiClient.Builder(this)
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(Bundle connectionHint) {
+                        Log.d(TAG, "onConnected: " + connectionHint);
+                    }
+
+                    @Override
+                    public void onConnectionSuspended(int cause) {
+                        Log.d(TAG, "onConnectionSuspended: " + cause);
+                    }
+                })
+                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(ConnectionResult result) {
+                        Log.d(TAG, "onConnectionFailed: " + result);
+                    }
+                })
                 .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
                 .build();
 
 
         timerDweetPost = new Timer();
-        timerDweetPost.scheduleAtFixedRate( new TimerTask() {
+        timerDweetPost.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 runOnUiThread(new Runnable() {
@@ -80,7 +96,7 @@ public class MainActivity extends ActionBarActivity implements DataApi.DataListe
                     }
                 });
             }
-        },1000,60*1000);
+        }, 1000, 60 * 1000);
     }
 
 
@@ -106,31 +122,8 @@ public class MainActivity extends ActionBarActivity implements DataApi.DataListe
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onConnected(Bundle bundle) {
 
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onDataChanged(DataEventBuffer dataEvents) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-    }
-
-
-
-
-    private class DweetPostRequest extends AsyncTask
-    {
+    private class DweetPostRequest extends AsyncTask {
         @Override
         protected Object doInBackground(Object[] params) {
             try {
@@ -140,7 +133,7 @@ public class MainActivity extends ActionBarActivity implements DataApi.DataListe
                 DefaultHttpClient httpClient = new DefaultHttpClient();
                 HttpPost httpPost = new HttpPost("https://dweet.io:443/dweet/for/freezerTemp");
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("temp",result);
+                jsonObject.put("temp", result);
                 if (jsonObject != null) {
                     StringEntity stringEntity = new StringEntity(
                             jsonObject.toString());
@@ -151,16 +144,14 @@ public class MainActivity extends ActionBarActivity implements DataApi.DataListe
                 HttpResponse httpResponse = httpClient.execute(httpPost);
                 HttpEntity httpEntity = httpResponse.getEntity();
                 InputStream is = httpEntity.getContent();
-                System.out.println(">>>>>Dweet post response:"+is.toString());
+                System.out.println(">>>>>Dweet post response:" + is.toString());
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             } catch (ClientProtocolException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-            catch (JSONException e)
-            {
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
             return null;
@@ -174,8 +165,7 @@ public class MainActivity extends ActionBarActivity implements DataApi.DataListe
     }
 
 
-    private class DweetGetRequest extends AsyncTask
-    {
+    private class DweetGetRequest extends AsyncTask {
         @Override
         protected Object doInBackground(Object[] params) {
             // https://dweet.io:443/get/latest/dweet/for/freezerTemp
@@ -205,8 +195,7 @@ public class MainActivity extends ActionBarActivity implements DataApi.DataListe
                 System.out.println(">>>>> temp:" + jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("temp"));
                 currentTemp = jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("temp");
 
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
@@ -219,24 +208,23 @@ public class MainActivity extends ActionBarActivity implements DataApi.DataListe
             super.onPostExecute(o);
             updateTemperature();
             arcProgress.setProgress(0);
-            System.out.println(">>>>>> currentTemp :"+currentTemp);
-            if(currentTemp >= -85.00 && currentTemp <= -75.00)
-            {
+            System.out.println(">>>>>> currentTemp :" + currentTemp);
+            if (currentTemp >= -85.00 && currentTemp <= -75.00) {
                 System.out.println(">>>>> green color");
                 arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.green_progress_color));
                 arcProgress.setTextColor(getResources().getColor(R.color.green_temperature_color_code));
                 alarmIV.setVisibility(View.INVISIBLE);
-            }else if(currentTemp >= -75.00 && currentTemp <= -65.00)
-            {
+            } else if (currentTemp >= -75.00 && currentTemp <= -65.00) {
                 System.out.println(">>>>>> yellow color");
                 arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.yellow_progress_color));
                 arcProgress.setTextColor(getResources().getColor(R.color.yellow_temperature_color_code));
+                alarmIV.setVisibility(View.VISIBLE);
                 alarmIV.setImageResource(R.drawable.alert);
-            }else if(currentTemp >= -65.00 && currentTemp <= -50.00)
-            {
+            } else if (currentTemp >= -65.00 && currentTemp <= -50.00) {
                 System.out.println(">>>>> red color");
                 arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.red_progress_color));
                 arcProgress.setTextColor(getResources().getColor(R.color.red_temperature_color_code));
+                alarmIV.setVisibility(View.VISIBLE);
                 alarmIV.setImageResource(R.drawable.fire_alarm);
             }
 
@@ -247,7 +235,7 @@ public class MainActivity extends ActionBarActivity implements DataApi.DataListe
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if(arcProgress.getProgress() < Math.abs(currentTemp))
+                            if (arcProgress.getProgress() < Math.abs(currentTemp))
                                 arcProgress.setProgress(arcProgress.getProgress() + 1);
                             else
                                 timer.cancel();
@@ -259,16 +247,29 @@ public class MainActivity extends ActionBarActivity implements DataApi.DataListe
     }
 
 
-  void updateTemperature()
-  {
-      PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/temp");
-      putDataMapReq.getDataMap().putDouble("currentTemp", currentTemp);
-      PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
-      PendingResult<DataApi.DataItemResult> pendingResult =
-              Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
-  }
+    void updateTemperature() {
+        if (mGoogleApiClient.isConnected()) {
+            System.out.println(">>>>> push data for wearable device");
+            PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/temp");
+            putDataMapReq.getDataMap().putDouble("currentTemp", currentTemp);
+            PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
+            PendingResult<DataApi.DataItemResult> pendingResult =
+                    Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
+        }
+    }
 
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mGoogleApiClient.disconnect();
+    }
 
 
 }
