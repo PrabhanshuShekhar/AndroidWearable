@@ -45,6 +45,7 @@ public class MainActivity extends Activity  {
             public void onLayoutInflated(WatchViewStub stub) {
 //                mTextView = (TextView) stub.findViewById(R.id.text);
                 arcProgress = (ArcProgress)stub.findViewById(R.id.arc_progress);
+                arcProgress.setBackgroundColor(Color.TRANSPARENT);
                 alarmIV = (ImageView)stub.findViewById(R.id.alarmIV);
                 currentTemp = getIntent().getDoubleExtra("currentTemp",0);
 //                mTextView.setText(""+currentTemp);

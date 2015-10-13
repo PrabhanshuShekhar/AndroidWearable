@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    tools:deviceIds="wear_round">
+    tools:deviceIds="wear_round"
+    android:background="@android:color/white">
 
     <!--<TextView android:id="@+id/text" android:layout_width="wrap_content"-->
         <!--android:layout_height="wrap_content" android:layout_centerHorizontal="true"-->
@@ -14,15 +15,15 @@
         android:id="@+id/alarmIV"
         android:layout_width="20dp"
         android:layout_height="20dp"
-        android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="38dp"
+        android:layout_marginTop="25dp"
         android:scaleType="fitXY"
         android:src="@drawable/fire_alarm"/>
     <test.AndroidWearable.ArcProgress
         android:id="@+id/arc_progress"
-        android:background="#ffffff"
+        android:background="@android:color/transparent"
         android:layout_centerInParent="true"
         android:layout_width="150dp"
         android:layout_height="150dp"
