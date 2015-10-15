@@ -71,6 +71,16 @@ public class ArcProgress extends View {
     private static final String INSTANCE_ARC_ANGLE = "arc_angle";
     private static final String INSTANCE_SUFFIX = "suffix";
 
+    private boolean isNegative;
+
+    public boolean isNegative() {
+        return isNegative;
+    }
+
+    public void setNegative(boolean isNegative) {
+        this.isNegative = isNegative;
+    }
+
     public ArcProgress(Context context) {
         this(context, null);
     }
@@ -299,7 +309,10 @@ public class ArcProgress extends View {
             textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
             float textHeight = textPaint.descent() + textPaint.ascent();
 //            float textBaseline = (getHeight() - textHeight) / 2.0f;
+            if(isNegative)
             text = "-"+ text+ (char) 0x00B0 + "C";
+            else
+            text = text + (char) 0x00B0 + "C";
             float textBaseline = getHeight() - arcBottomHeight - (textPaint.descent() + textPaint.ascent()) / 2;
             canvas.drawText(text, (getWidth() - textPaint.measureText(text)) / 2.0f, textBaseline, textPaint);
 //            textPaint.setTextSize(suffixTextSize);

@@ -23,7 +23,7 @@ import com.google.android.gms.wearable.WearableListenerService;
  * Created by prabhanshu on 10/7/15.
  */
 public class TemperatureUpdateService extends WearableListenerService {
-    double currentTemp;
+    double actual_T, set_T,diff_T;
 
 
 
@@ -54,8 +54,10 @@ public class TemperatureUpdateService extends WearableListenerService {
                 DataItem item = event.getDataItem();
                 if (item.getUri().getPath().compareTo("/temp") == 0) {
                     DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-                    currentTemp = dataMap.getDouble("currentTemp");
-                    System.out.println(">>>> on data changed:"+currentTemp);
+                    actual_T = dataMap.getDouble("actual_T");
+                    set_T = dataMap.getDouble("set_T");
+                    diff_T = dataMap.getDouble("diff_T");
+                    System.out.println(">>>> on data changed:"+actual_T);
 //                    Intent viewIntent = new Intent(this, MainActivity.class);
 //                    viewIntent.putExtra("currentTemp",currentTemp);
 //                    viewIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -63,7 +65,9 @@ public class TemperatureUpdateService extends WearableListenerService {
 
                     Intent intent = new Intent("freezer_Temperature_update_receiver");
 
-                        intent.putExtra("currentTemp", currentTemp);
+                    intent.putExtra("actual_T", actual_T);
+                    intent.putExtra("set_T",set_T);
+                    intent.putExtra("diff_T",diff_T);
                     LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 //                    publishTemp();
 //                    updateCount(dataMap.getInt(COUNT_KEY));

@@ -17,7 +17,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginRight="15dp"
         android:layout_marginTop="15dp"
-        android:src="@drawable/fire_alarm"/>
+        android:src="@drawable/red_heart"/>
     <test.AndroidWearable.ArcProgress
         android:id="@+id/arc_progress"
         android:background="#ffffff"

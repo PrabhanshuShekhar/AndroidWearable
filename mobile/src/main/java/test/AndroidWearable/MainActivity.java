@@ -1,21 +1,28 @@
 package test.AndroidWearable;
 
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.wearable.DataApi;
-import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
@@ -47,7 +54,8 @@ public class MainActivity extends ActionBarActivity {
     ArcProgress arcProgress;
     ImageView alarmIV;
     Timer timer, timerDweetPost;
-    double currentTemp;
+    double set_T, actual_T;
+    double temperatureDiff;
     GoogleApiClient mGoogleApiClient;
     private static final String TAG = "PhoneActivity";
 
@@ -58,6 +66,7 @@ public class MainActivity extends ActionBarActivity {
         arcProgress = (ArcProgress) findViewById(R.id.arc_progress);
         alarmIV = (ImageView) findViewById(R.id.alarmIV);
         arcProgress.setStrokeWidth(40);
+        arcProgress.setMax(150);
         arcProgress.setUnfinishedStrokeColor(Color.parseColor("#A9A9A9"));
         arcProgress.setTextSize(40);
         arcProgress.setBackgroundColor(Color.TRANSPARENT);
@@ -92,7 +101,8 @@ public class MainActivity extends ActionBarActivity {
                     public void run() {
 
                         System.out.println(">>>>>> scheduler");
-                        new DweetPostRequest().execute(null);
+//                        new DweetPostRequest().execute(null);
+                        new DweetGetRequest().execute(null);
                     }
                 });
             }
@@ -170,7 +180,10 @@ public class MainActivity extends ActionBarActivity {
         protected Object doInBackground(Object[] params) {
             // https://dweet.io:443/get/latest/dweet/for/freezerTemp
             DefaultHttpClient httpClient = new DefaultHttpClient();
-            HttpGet httpGet = new HttpGet("https://dweet.io:443/get/latest/dweet/for/freezerTemp");
+//            HttpGet httpGet = new HttpGet("https://dweet.io:443/get/latest/dweet/for/freezerTemp");
+            HttpGet httpGet = new HttpGet("https://dweet.io:443/get/latest/dweet/for/IEC_Freezer1");
+
+
             HttpResponse httpResponse;
             try {
                 httpResponse = httpClient.execute(httpGet);
@@ -192,8 +205,10 @@ public class MainActivity extends ActionBarActivity {
                 }
                 System.out.println(">>>>> get response:" + jsonString.toString());
                 JSONObject jsonObject = new JSONObject(jsonString);
-                System.out.println(">>>>> temp:" + jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("temp"));
-                currentTemp = jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("temp");
+                System.out.println(">>>>> Set_t:" + jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("Set_t"));
+                System.out.println(">>>>> Actual_t:" + jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("Actual_t"));
+                set_T = jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("Set_t");
+                actual_T = jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("Actual_t");
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -206,26 +221,36 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
+            alarmIV.clearAnimation();
             updateTemperature();
             arcProgress.setProgress(0);
-            System.out.println(">>>>>> currentTemp :" + currentTemp);
-            if (currentTemp >= -85.00 && currentTemp <= -75.00) {
+            if(actual_T < 0.0)
+            arcProgress.setNegative(true);
+            else
+            arcProgress.setNegative(false);
+            temperatureDiff = Math.abs(set_T - actual_T) ;
+            System.out.println(">>>> diff_t:"+temperatureDiff);
+            if (temperatureDiff < 5.00) {
                 System.out.println(">>>>> green color");
                 arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.green_progress_color));
                 arcProgress.setTextColor(getResources().getColor(R.color.green_temperature_color_code));
-                alarmIV.setVisibility(View.INVISIBLE);
-            } else if (currentTemp >= -75.00 && currentTemp <= -65.00) {
+                alarmIV.setVisibility(View.VISIBLE);
+                alarmIV.setImageResource(R.drawable.green_heart);
+            } else if (temperatureDiff >= 5 && temperatureDiff < 10.00) {
                 System.out.println(">>>>>> yellow color");
                 arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.yellow_progress_color));
                 arcProgress.setTextColor(getResources().getColor(R.color.yellow_temperature_color_code));
                 alarmIV.setVisibility(View.VISIBLE);
-                alarmIV.setImageResource(R.drawable.alert);
-            } else if (currentTemp >= -65.00 && currentTemp <= -50.00) {
+                alarmIV.setImageResource(R.drawable.yellow_heart);
+                imageBlink();
+            } else if (temperatureDiff >= 10 ) {
                 System.out.println(">>>>> red color");
                 arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.red_progress_color));
                 arcProgress.setTextColor(getResources().getColor(R.color.red_temperature_color_code));
                 alarmIV.setVisibility(View.VISIBLE);
-                alarmIV.setImageResource(R.drawable.fire_alarm);
+                alarmIV.setImageResource(R.drawable.red_heart);
+                sendNotification();
+                imageBlink();
             }
 
             timer = new Timer();
@@ -235,7 +260,7 @@ public class MainActivity extends ActionBarActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (arcProgress.getProgress() < Math.abs(currentTemp))
+                            if (arcProgress.getProgress() < Math.abs(actual_T))
                                 arcProgress.setProgress(arcProgress.getProgress() + 1);
                             else
                                 timer.cancel();
@@ -247,11 +272,71 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
+    private void sendNotification()
+    {
+        try {
+            System.out.println(">>>>> send notification");
+            int notificationId = 101;
+            // Build intent for notification content
+            Intent viewIntent = new Intent(this, MainActivity.class);
+            PendingIntent viewPendingIntent =
+                    PendingIntent.getActivity(this, 0, viewIntent, 0);
+
+            Uri soundUri = Uri.parse("android.resource://" + getPackageName() + "/"
+                    + R.raw.receive);
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) getResources().getDrawable(R.drawable.app_icon);
+            NotificationCompat.WearableExtender wearableExtender =
+                    new NotificationCompat.WearableExtender()
+                            .setHintHideIcon(true)
+                            .setBackground(bitmapDrawable.getBitmap());
+            NotificationCompat.Builder notificationBuilder =
+                    new NotificationCompat.Builder(this)
+                            .setSmallIcon(R.drawable.app_icon)
+                            .setContentTitle("alert")
+                            .setContentText("Cabinet temperature exteremely high please stop using Freeze.")
+                            .extend(wearableExtender)
+                            .setSound(soundUri)
+                            .setContentIntent(viewPendingIntent);
+
+            // instance of the NotificationManager service
+            NotificationManagerCompat notificationManager =
+                    NotificationManagerCompat.from(this);
+
+            // Build the notification and notify it using notification manager.
+            notificationManager.notify(notificationId, notificationBuilder.build());
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void imageBlink()
+    {
+        Animation animation = new AlphaAnimation(1, 0); // Change alpha
+        // from fully
+        // visible to
+        // invisible
+        if(temperatureDiff >= 5 && temperatureDiff < 10)
+        animation.setDuration(1000);
+         else if(temperatureDiff >= 10)
+         animation.setDuration(500);// duration - half a second
+        animation.setInterpolator(new LinearInterpolator()); // do not alter
+        // animation
+        // rate
+        animation.setRepeatCount(Animation.INFINITE); // Repeat animation
+        // infinitely
+        animation.setRepeatMode(Animation.REVERSE); // Reverse animation at
+
+        alarmIV.startAnimation(animation);
+    }
+
     void updateTemperature() {
         if (mGoogleApiClient.isConnected()) {
             System.out.println(">>>>> push data for wearable device");
             PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/temp");
-            putDataMapReq.getDataMap().putDouble("currentTemp", currentTemp);
+            putDataMapReq.getDataMap().putDouble("actual_T", actual_T);
+            putDataMapReq.getDataMap().putDouble("set_T", set_T);
+            putDataMapReq.getDataMap().putDouble("diff_T", temperatureDiff);
             PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
             PendingResult<DataApi.DataItemResult> pendingResult =
                     Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);

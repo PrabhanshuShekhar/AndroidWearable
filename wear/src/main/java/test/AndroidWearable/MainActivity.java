@@ -10,6 +10,9 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.view.WatchViewStub;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,7 +23,7 @@ public class MainActivity extends Activity  {
 
     Timer timer;
     ImageView alarmIV;
-    double currentTemp;
+    double set_T, actual_T, diff_T;
     TextView mTextView;
     ArcProgress arcProgress;
 
@@ -29,7 +32,9 @@ public class MainActivity extends Activity  {
         @Override
         public void onReceive(Context context, Intent intent) {
             System.out.println(">>>>>> receiver to update Temp UI");
-            currentTemp = intent.getDoubleExtra("currentTemp",0);
+            actual_T = intent.getDoubleExtra("actual_T",0);
+            set_T = intent.getDoubleExtra("set_T",0);
+            diff_T = intent.getDoubleExtra("diff_T",0);
             showView();
         }
     };
@@ -47,30 +52,38 @@ public class MainActivity extends Activity  {
                 arcProgress = (ArcProgress)stub.findViewById(R.id.arc_progress);
                 arcProgress.setBackgroundColor(Color.TRANSPARENT);
                 alarmIV = (ImageView)stub.findViewById(R.id.alarmIV);
-                currentTemp = getIntent().getDoubleExtra("currentTemp",0);
+                actual_T = getIntent().getDoubleExtra("actual_T",0);
+                set_T = getIntent().getDoubleExtra("set_T",0);
+                diff_T = getIntent().getDoubleExtra("diff_T",0);
+                if(actual_T < 0.0)
+                    arcProgress.setNegative(true);
+                else
+                    arcProgress.setNegative(false);
 //                mTextView.setText(""+currentTemp);
+                arcProgress.setMax(150);
                 arcProgress.setProgress(0);
                 arcProgress.setStrokeWidth(20);
                 arcProgress.setUnfinishedStrokeColor(Color.parseColor("#A9A9A9"));
                 arcProgress.setTextSize(20);
-                System.out.println(">>>>>> currentTemp :" + currentTemp);
-                if (currentTemp >= -85.00 && currentTemp <= -75.00) {
+                System.out.println(">>>>>> currentTemp :" + actual_T);
+                if (diff_T < 5.00) {
                     System.out.println(">>>>> green color");
                     arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.green_progress_color));
                     arcProgress.setTextColor(getResources().getColor(R.color.green_temperature_color_code));
-                    alarmIV.setVisibility(View.INVISIBLE);
-                } else if (currentTemp >= -75.00 && currentTemp <= -65.00) {
+                    alarmIV.setVisibility(View.VISIBLE);
+                    alarmIV.setImageResource(R.drawable.green_heart);
+                } else if (diff_T >= 5.00 && diff_T < 10.00) {
                     System.out.println(">>>>>> yellow color");
                     arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.yellow_progress_color));
                     arcProgress.setTextColor(getResources().getColor(R.color.yellow_temperature_color_code));
                     alarmIV.setVisibility(View.VISIBLE);
-                    alarmIV.setImageResource(R.drawable.alert);
-                } else if (currentTemp >= -65.00 && currentTemp <= -50.00) {
+                    alarmIV.setImageResource(R.drawable.yellow_heart);
+                } else if (diff_T >= 10.00 ) {
                     System.out.println(">>>>> red color");
                     arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.red_progress_color));
                     arcProgress.setTextColor(getResources().getColor(R.color.red_temperature_color_code));
                     alarmIV.setVisibility(View.VISIBLE);
-                    alarmIV.setImageResource(R.drawable.fire_alarm);
+                    alarmIV.setImageResource(R.drawable.red_heart);
                 }
 
                 timer = new Timer();
@@ -80,7 +93,7 @@ public class MainActivity extends Activity  {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (arcProgress.getProgress() < Math.abs(currentTemp))
+                                if (arcProgress.getProgress() < Math.abs(actual_T))
                                     arcProgress.setProgress(arcProgress.getProgress() + 1);
                                 else
                                     timer.cancel();
@@ -100,25 +113,34 @@ public class MainActivity extends Activity  {
   void showView()
  {
      System.out.println(">>>>> show View");
+     if(actual_T < 0.0)
+         arcProgress.setNegative(true);
+     else
+          arcProgress.setNegative(false);
      arcProgress.setProgress(0);
-     System.out.println(">>>>>> currentTemp :" + currentTemp);
-     if (currentTemp >= -85.00 && currentTemp <= -75.00) {
+      alarmIV.clearAnimation();
+     System.out.println(">>>>>> actual_T :" + actual_T);
+     System.out.println(">>>> diff_t:"+diff_T);
+     if (diff_T < 5.00) {
          System.out.println(">>>>> green color");
          arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.green_progress_color));
          arcProgress.setTextColor(getResources().getColor(R.color.green_temperature_color_code));
-         alarmIV.setVisibility(View.INVISIBLE);
-     } else if (currentTemp >= -75.00 && currentTemp <= -65.00) {
+         alarmIV.setVisibility(View.VISIBLE);
+         alarmIV.setImageResource(R.drawable.green_heart);
+     } else if (diff_T >= 5.00 && diff_T <= 10.00) {
          System.out.println(">>>>>> yellow color");
          arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.yellow_progress_color));
          arcProgress.setTextColor(getResources().getColor(R.color.yellow_temperature_color_code));
          alarmIV.setVisibility(View.VISIBLE);
-         alarmIV.setImageResource(R.drawable.alert);
-     } else if (currentTemp >= -65.00 && currentTemp <= -50.00) {
+         alarmIV.setImageResource(R.drawable.yellow_heart);
+         imageBlink();
+     } else if (diff_T >= 10.00) {
          System.out.println(">>>>> red color");
          arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.red_progress_color));
          arcProgress.setTextColor(getResources().getColor(R.color.red_temperature_color_code));
          alarmIV.setVisibility(View.VISIBLE);
-         alarmIV.setImageResource(R.drawable.fire_alarm);
+         alarmIV.setImageResource(R.drawable.red_heart);
+         imageBlink();
      }
 
      timer = new Timer();
@@ -128,7 +150,7 @@ public class MainActivity extends Activity  {
              runOnUiThread(new Runnable() {
                  @Override
                  public void run() {
-                     if (arcProgress.getProgress() < Math.abs(currentTemp))
+                     if (arcProgress.getProgress() < Math.abs(actual_T))
                          arcProgress.setProgress(arcProgress.getProgress() + 1);
                      else
                          timer.cancel();
@@ -138,6 +160,26 @@ public class MainActivity extends Activity  {
      }, 1000, 100);
 
  }
+
+    private void imageBlink()
+    {
+        Animation animation = new AlphaAnimation(1, 0); // Change alpha
+        // from fully
+        // visible to
+        // invisible
+        if(diff_T >= 5.00 && diff_T < 10.00)
+        animation.setDuration(1000); // duration - a second
+        else if(diff_T >= 10)
+            animation.setDuration(500);
+        animation.setInterpolator(new LinearInterpolator()); // do not alter
+        // animation
+        // rate
+        animation.setRepeatCount(Animation.INFINITE); // Repeat animation
+        // infinitely
+        animation.setRepeatMode(Animation.REVERSE); // Reverse animation at
+
+        alarmIV.startAnimation(animation);
+    }
 
     @Override
     protected void onResume() {
