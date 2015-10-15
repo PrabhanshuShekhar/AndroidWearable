@@ -35,6 +35,7 @@ public class ArcProgress extends View {
     private int textColor;
     private int progress = 0;
     private int max;
+    private int min;
     private int finishedStrokeColor;
     private int unfinishedStrokeColor;
     private float arcAngle;
@@ -52,6 +53,7 @@ public class ArcProgress extends View {
     private final float default_stroke_width;
     private final String default_suffix_text;
     private final int default_max = 100;
+    private final int default_min = 0;
     private final float default_arc_angle = 360 * 0.8f;
     private float default_text_size;
     private final int min_size;
@@ -114,8 +116,8 @@ public class ArcProgress extends View {
         textColor = attributes.getColor(R.styleable.ArcProgress_arc_text_color, default_text_color);
         textSize = attributes.getDimension(R.styleable.ArcProgress_arc_text_size, default_text_size);
         arcAngle = attributes.getFloat(R.styleable.ArcProgress_arc_angle, default_arc_angle);
-        setMax(attributes.getInt(R.styleable.ArcProgress_arc_max, default_max));
-        setProgress(attributes.getInt(R.styleable.ArcProgress_arc_progress, 0));
+        setMax(attributes.getInt(R.styleable.ArcProgress_arc_max, getMax()));
+        setProgress(attributes.getInt(R.styleable.ArcProgress_arc_progress, getMin()));
         strokeWidth = attributes.getDimension(R.styleable.ArcProgress_arc_stroke_width, default_stroke_width);
         suffixTextSize = attributes.getDimension(R.styleable.ArcProgress_arc_suffix_text_size, default_suffix_text_size);
         suffixText = TextUtils.isEmpty(attributes.getString(R.styleable.ArcProgress_arc_suffix_text)) ? default_suffix_text : attributes.getString(R.styleable.ArcProgress_arc_suffix_text);
@@ -188,9 +190,20 @@ public class ArcProgress extends View {
     }
 
     public void setMax(int max) {
-        if (max > 0) {
+        if (max != 0) {
             this.max = max;
             invalidate();
+        }
+    }
+
+    public int getMin() {
+        return min;
+    }
+
+    public void setMin(int min) {
+        if(min != 0) {
+            this.min = min;
+           invalidate();
         }
     }
 
@@ -290,7 +303,8 @@ public class ArcProgress extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float startAngle = 270 - arcAngle / 2f;
-        float finishedSweepAngle = progress / (float) getMax() * arcAngle;
+//        float finishedSweepAngle = progress / (float) getMax() * arcAngle;
+        float finishedSweepAngle = Math.abs((getMin() - progress)) * (float)(arcAngle/(getMax() - getMin()  ));
         float finishedStartAngle = startAngle;
         paint.setColor(unfinishedStrokeColor);
         canvas.drawArc(rectF, startAngle, arcAngle, false, paint);

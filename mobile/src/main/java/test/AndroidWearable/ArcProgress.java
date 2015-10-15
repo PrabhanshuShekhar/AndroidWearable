@@ -33,8 +33,9 @@ public class ArcProgress extends View {
     private String bottomText;
     private float textSize;
     private int textColor;
-    private int progress = 0;
+    private int progress = -100;
     private int max;
+    private int min;
     private int finishedStrokeColor;
     private int unfinishedStrokeColor;
     private float arcAngle;
@@ -43,7 +44,7 @@ public class ArcProgress extends View {
 
     private float arcBottomHeight;
 
-    private final int default_finished_color = Color.WHITE;
+    private final int default_finished_color = Color.GREEN;
     private final int default_unfinished_color = Color.rgb(72, 106, 176);
     private final int default_text_color = Color.rgb(66, 145, 241);
     private final float default_suffix_text_size;
@@ -52,6 +53,7 @@ public class ArcProgress extends View {
     private final float default_stroke_width;
     private final String default_suffix_text;
     private final int default_max = 100;
+    private final int default_min = 0;
     private final float default_arc_angle = 360 * 0.8f;
     private float default_text_size;
     private final int min_size;
@@ -114,8 +116,8 @@ public class ArcProgress extends View {
         textColor = attributes.getColor(R.styleable.ArcProgress_arc_text_color, default_text_color);
         textSize = attributes.getDimension(R.styleable.ArcProgress_arc_text_size, default_text_size);
         arcAngle = attributes.getFloat(R.styleable.ArcProgress_arc_angle, default_arc_angle);
-        setMax(attributes.getInt(R.styleable.ArcProgress_arc_max, default_max));
-        setProgress(attributes.getInt(R.styleable.ArcProgress_arc_progress, 0));
+        setMax(attributes.getInt(R.styleable.ArcProgress_arc_max, getMax()));
+        setProgress(attributes.getInt(R.styleable.ArcProgress_arc_progress, getMin()));
         strokeWidth = attributes.getDimension(R.styleable.ArcProgress_arc_stroke_width, default_stroke_width);
         suffixTextSize = attributes.getDimension(R.styleable.ArcProgress_arc_suffix_text_size, default_suffix_text_size);
         suffixText = TextUtils.isEmpty(attributes.getString(R.styleable.ArcProgress_arc_suffix_text)) ? default_suffix_text : attributes.getString(R.styleable.ArcProgress_arc_suffix_text);
@@ -183,12 +185,23 @@ public class ArcProgress extends View {
         invalidate();
     }
 
+    public int getMin() {
+        return min;
+    }
+
+    public void setMin(int min) {
+        if (min!= 0) {
+            this.min = min;
+            invalidate();
+        }
+    }
+
     public int getMax() {
         return max;
     }
 
     public void setMax(int max) {
-        if (max > 0) {
+        if (max != 0) {
             this.max = max;
             invalidate();
         }
@@ -289,19 +302,29 @@ public class ArcProgress extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+//        float finishedSweepAngle = progress / (float) getMax() * arcAngle;
+        float finishedSweepAngle = Math.abs((getMin() - progress)) * (float)(arcAngle/(getMax() - getMin()  ));
         float startAngle = 270 - arcAngle / 2f;
-        float finishedSweepAngle = progress / (float) getMax() * arcAngle;
         float finishedStartAngle = startAngle;
         paint.setColor(unfinishedStrokeColor);
         canvas.drawArc(rectF, startAngle, arcAngle, false, paint);
         paint.setColor(finishedStrokeColor);
         canvas.drawArc(rectF, finishedStartAngle, finishedSweepAngle, false, paint);
 
+        System.out.println(">>>>>> arc angle:" + arcAngle);
+        System.out.println(">>>>>> start angle:"+startAngle);
+        System.out.println(">>>>>> finishedStartAngle:"+finishedStartAngle);
+        System.out.println(">>>>>> finishedSwipeAngle:"+finishedSweepAngle);
         Bitmap kangoo = BitmapFactory.decodeResource(getResources(),
                 R.drawable.thermameter);
         canvas.drawBitmap(kangoo, (getWidth()-kangoo.getWidth())/2.0f,(getHeight())/2.0f -kangoo.getHeight() , null);
 
-
+//       try {
+//          wait();
+//       }catch(Exception e)
+//       {
+//           e.printStackTrace();
+//       }
         String text = String.valueOf(getProgress());
         if (!TextUtils.isEmpty(text)) {
             textPaint.setColor(textColor);

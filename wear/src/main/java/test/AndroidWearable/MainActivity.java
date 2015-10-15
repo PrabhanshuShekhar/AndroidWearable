@@ -60,8 +60,8 @@ public class MainActivity extends Activity  {
                 else
                     arcProgress.setNegative(false);
 //                mTextView.setText(""+currentTemp);
-                arcProgress.setMax(150);
-                arcProgress.setProgress(0);
+                arcProgress.setMax(100);
+                arcProgress.setMin(-100);
                 arcProgress.setStrokeWidth(20);
                 arcProgress.setUnfinishedStrokeColor(Color.parseColor("#A9A9A9"));
                 arcProgress.setTextSize(20);
@@ -93,7 +93,7 @@ public class MainActivity extends Activity  {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (arcProgress.getProgress() < Math.abs(actual_T))
+                                if (arcProgress.getProgress() <actual_T)
                                     arcProgress.setProgress(arcProgress.getProgress() + 1);
                                 else
                                     timer.cancel();
@@ -113,11 +113,11 @@ public class MainActivity extends Activity  {
   void showView()
  {
      System.out.println(">>>>> show View");
-     if(actual_T < 0.0)
-         arcProgress.setNegative(true);
-     else
-          arcProgress.setNegative(false);
-     arcProgress.setProgress(0);
+//     if(actual_T < 0.0)
+//         arcProgress.setNegative(true);
+//     else
+//          arcProgress.setNegative(false);
+     arcProgress.setProgress(-100);
       alarmIV.clearAnimation();
      System.out.println(">>>>>> actual_T :" + actual_T);
      System.out.println(">>>> diff_t:"+diff_T);
@@ -150,7 +150,7 @@ public class MainActivity extends Activity  {
              runOnUiThread(new Runnable() {
                  @Override
                  public void run() {
-                     if (arcProgress.getProgress() < Math.abs(actual_T))
+                     if (arcProgress.getProgress() < actual_T)
                          arcProgress.setProgress(arcProgress.getProgress() + 1);
                      else
                          timer.cancel();

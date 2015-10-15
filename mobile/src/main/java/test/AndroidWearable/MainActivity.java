@@ -66,7 +66,8 @@ public class MainActivity extends ActionBarActivity {
         arcProgress = (ArcProgress) findViewById(R.id.arc_progress);
         alarmIV = (ImageView) findViewById(R.id.alarmIV);
         arcProgress.setStrokeWidth(40);
-        arcProgress.setMax(150);
+        arcProgress.setMin(-100);
+        arcProgress.setMax(100);
         arcProgress.setUnfinishedStrokeColor(Color.parseColor("#A9A9A9"));
         arcProgress.setTextSize(40);
         arcProgress.setBackgroundColor(Color.TRANSPARENT);
@@ -209,7 +210,6 @@ public class MainActivity extends ActionBarActivity {
                 System.out.println(">>>>> Actual_t:" + jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("Actual_t"));
                 set_T = jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("Set_t");
                 actual_T = jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("Actual_t");
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -223,11 +223,7 @@ public class MainActivity extends ActionBarActivity {
             super.onPostExecute(o);
             alarmIV.clearAnimation();
             updateTemperature();
-            arcProgress.setProgress(0);
-            if(actual_T < 0.0)
-            arcProgress.setNegative(true);
-            else
-            arcProgress.setNegative(false);
+            arcProgress.setProgress(-100);
             temperatureDiff = Math.abs(set_T - actual_T) ;
             System.out.println(">>>> diff_t:"+temperatureDiff);
             if (temperatureDiff < 5.00) {
@@ -260,7 +256,7 @@ public class MainActivity extends ActionBarActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (arcProgress.getProgress() < Math.abs(actual_T))
+                            if (arcProgress.getProgress() < actual_T)
                                 arcProgress.setProgress(arcProgress.getProgress() + 1);
                             else
                                 timer.cancel();
@@ -282,8 +278,8 @@ public class MainActivity extends ActionBarActivity {
             PendingIntent viewPendingIntent =
                     PendingIntent.getActivity(this, 0, viewIntent, 0);
 
-            Uri soundUri = Uri.parse("android.resource://" + getPackageName() + "/"
-                    + R.raw.receive);
+//            Uri soundUri = Uri.parse("android.resource://" + getPackageName() + "/"
+//                    + R.raw.receive);
             BitmapDrawable bitmapDrawable = (BitmapDrawable) getResources().getDrawable(R.drawable.app_icon);
             NotificationCompat.WearableExtender wearableExtender =
                     new NotificationCompat.WearableExtender()
@@ -295,7 +291,7 @@ public class MainActivity extends ActionBarActivity {
                             .setContentTitle("alert")
                             .setContentText("Cabinet temperature exteremely high please stop using Freeze.")
                             .extend(wearableExtender)
-                            .setSound(soundUri)
+//                            .setSound(soundUri)
                             .setContentIntent(viewPendingIntent);
 
             // instance of the NotificationManager service
