@@ -24,12 +24,12 @@
     <color name="smartwatch_color">#4ea2db</color>
 
     <color name="black">#ff000000</color>
-    <color name="red_progress_color">#bf2c34</color>
-    <color name="red_temperature_color_code">#921A23</color>
-    <color name="green_progress_color">#009900</color>
-    <color name="green_temperature_color_code">#006600</color>
+    <color name="red_progress_color">#ff0000</color>
+    <color name="red_temperature_color_code">#ff0000</color>
+    <color name="blue_progress_color">#558ED5</color>
+    <color name="blue_temperature_color_code">#558ED5</color>
 
-    <color name="yellow_progress_color">#FFFF00</color>
-    <color name="yellow_temperature_color_code">#e6e600</color>
+    <color name="yellow_progress_color">#ffc000</color>
+    <color name="yellow_temperature_color_code">#ffc000</color>
 
 </resources>

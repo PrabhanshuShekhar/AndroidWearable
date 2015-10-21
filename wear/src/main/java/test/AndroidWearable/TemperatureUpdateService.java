@@ -22,7 +22,7 @@ import com.google.android.gms.wearable.WearableListenerService;
 /**
  * Created by prabhanshu on 10/7/15.
  */
-public class TemperatureUpdateService extends WearableListenerService {
+public class TemperatureUpdateService extends WearableListenerService  {
     double actual_T, set_T,diff_T;
 
 
@@ -113,6 +113,7 @@ public class TemperatureUpdateService extends WearableListenerService {
 //            }
 //            Wearable.DataApi.deleteDataItems(
 //                    mGoogleApiClient, dataItemUri).setResultCallback(this);
+            Wearable.DataApi.addListener(mGoogleApiClient, TemperatureUpdateService.this);
         }
 
         @Override

@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -57,6 +58,7 @@ public class MainActivity extends ActionBarActivity {
     double set_T, actual_T;
     double temperatureDiff;
     GoogleApiClient mGoogleApiClient;
+    ImageView thermameterIV;
     private static final String TAG = "PhoneActivity";
 
     @Override
@@ -65,6 +67,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         arcProgress = (ArcProgress) findViewById(R.id.arc_progress);
         alarmIV = (ImageView) findViewById(R.id.alarmIV);
+        thermameterIV = (ImageView)findViewById(R.id.thermameterIV);
         arcProgress.setStrokeWidth(40);
         arcProgress.setMin(-100);
         arcProgress.setMax(100);
@@ -91,23 +94,29 @@ public class MainActivity extends ActionBarActivity {
                 })
                 .addApi(Wearable.API)
                 .build();
-
+        mGoogleApiClient.connect();
 
         timerDweetPost = new Timer();
+//        timerDweetPost.scheduleAtFixedRate(new TimerTask() {
+//            @Override
+//            public void run() {
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//                        System.out.println(">>>>>> scheduler");
+////                        new DweetPostRequest().execute(null);
+//                        new DweetGetRequest().execute(null);
+//                    }
+//                });
+//            }
+//        }, 1000, 30 * 1000);
         timerDweetPost.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        System.out.println(">>>>>> scheduler");
-//                        new DweetPostRequest().execute(null);
-                        new DweetGetRequest().execute(null);
-                    }
-                });
+                new DweetGetRequest().execute(null);
             }
-        }, 1000, 60 * 1000);
+        }, 1000, 30 * 1000);
     }
 
 
@@ -210,6 +219,8 @@ public class MainActivity extends ActionBarActivity {
                 System.out.println(">>>>> Actual_t:" + jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("Actual_t"));
                 set_T = jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("Set_t");
                 actual_T = jsonObject.getJSONArray("with").getJSONObject(0).getJSONObject("content").getDouble("Actual_t");
+                temperatureDiff = Math.abs(set_T - actual_T) ;
+                updateTemperature();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -222,29 +233,54 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(Object o) {
             super.onPostExecute(o);
             alarmIV.clearAnimation();
-            updateTemperature();
+//            updateTemperature();
             arcProgress.setProgress(-100);
-            temperatureDiff = Math.abs(set_T - actual_T) ;
+//            temperatureDiff = Math.abs(set_T - actual_T) ;
             System.out.println(">>>> diff_t:"+temperatureDiff);
-            if (temperatureDiff < 5.00) {
-                System.out.println(">>>>> green color");
-                arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.green_progress_color));
-                arcProgress.setTextColor(getResources().getColor(R.color.green_temperature_color_code));
+            if(actual_T >= -85.00 && actual_T < -75.00)
+            {
+                arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.blue_progress_color));
+                arcProgress.setTextColor(getResources().getColor(R.color.blue_temperature_color_code));
                 alarmIV.setVisibility(View.VISIBLE);
-                alarmIV.setImageResource(R.drawable.green_heart);
-            } else if (temperatureDiff >= 5 && temperatureDiff < 10.00) {
-                System.out.println(">>>>>> yellow color");
+                alarmIV.setImageResource(R.drawable.blue_heart);
+                thermameterIV.setImageResource(R.drawable.thermameter1);
+            }
+            else if(actual_T >= -75.00 && actual_T < -65.00)
+            {
                 arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.yellow_progress_color));
                 arcProgress.setTextColor(getResources().getColor(R.color.yellow_temperature_color_code));
                 alarmIV.setVisibility(View.VISIBLE);
-                alarmIV.setImageResource(R.drawable.yellow_heart);
-                imageBlink();
-            } else if (temperatureDiff >= 10 ) {
-                System.out.println(">>>>> red color");
+                alarmIV.setImageResource(R.drawable.orange_heart);
+                thermameterIV.setImageResource(R.drawable.thermameter2);
+            }
+            else if(actual_T >= -65.00)
+            {
                 arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.red_progress_color));
                 arcProgress.setTextColor(getResources().getColor(R.color.red_temperature_color_code));
                 alarmIV.setVisibility(View.VISIBLE);
                 alarmIV.setImageResource(R.drawable.red_heart);
+                thermameterIV.setImageResource(R.drawable.thermameter3);
+
+            }
+            if (temperatureDiff < 5.00) {
+//                System.out.println(">>>>> green color");
+//                arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.green_progress_color));
+//                arcProgress.setTextColor(getResources().getColor(R.color.green_temperature_color_code));
+//                alarmIV.setVisibility(View.VISIBLE);
+//                alarmIV.setImageResource(R.drawable.green_heart);
+            } else if (temperatureDiff >= 5 && temperatureDiff < 10.00) {
+//                System.out.println(">>>>>> yellow color");
+//                arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.yellow_progress_color));
+//                arcProgress.setTextColor(getResources().getColor(R.color.yellow_temperature_color_code));
+//                alarmIV.setVisibility(View.VISIBLE);
+//                alarmIV.setImageResource(R.drawable.yellow_heart);
+                imageBlink();
+            } else if (temperatureDiff >= 10 ) {
+//                System.out.println(">>>>> red color");
+//                arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.red_progress_color));
+//                arcProgress.setTextColor(getResources().getColor(R.color.red_temperature_color_code));
+//                alarmIV.setVisibility(View.VISIBLE);
+//                alarmIV.setImageResource(R.drawable.red_heart);
                 sendNotification();
                 imageBlink();
             }
@@ -327,16 +363,20 @@ public class MainActivity extends ActionBarActivity {
     }
 
     void updateTemperature() {
-        if (mGoogleApiClient.isConnected()) {
+//        if (mGoogleApiClient.isConnected()) {
             System.out.println(">>>>> push data for wearable device");
             PutDataMapRequest putDataMapReq = PutDataMapRequest.create("/temp");
             putDataMapReq.getDataMap().putDouble("actual_T", actual_T);
             putDataMapReq.getDataMap().putDouble("set_T", set_T);
             putDataMapReq.getDataMap().putDouble("diff_T", temperatureDiff);
             PutDataRequest putDataReq = putDataMapReq.asPutDataRequest();
-            PendingResult<DataApi.DataItemResult> pendingResult =
-                    Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
-        }
+//            PendingResult<DataApi.DataItemResult> pendingResult =
+//                    Wearable.DataApi.putDataItem(mGoogleApiClient, putDataReq);
+        DataApi.DataItemResult dataItemResult = Wearable.DataApi
+                .putDataItem(mGoogleApiClient, putDataReq).await();
+        System.out.println(">>>> status:"+dataItemResult.getDataItem().getData().length);
+
+//        }
     }
 
 

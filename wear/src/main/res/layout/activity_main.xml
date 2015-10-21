@@ -8,4 +8,4 @@
     tools:context=".MainActivity"
     tools:deviceIds="wear">
 
-    </android.support.wearable.view.WatchViewStub>
+</android.support.wearable.view.WatchViewStub>

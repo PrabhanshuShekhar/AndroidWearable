@@ -9,8 +9,6 @@
     tools:deviceIds="wear_square"
     android:background="@android:color/white">
 
-    <!--<TextView android:id="@+id/text" android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content" android:text="@string/hello_square" />-->
 
     <ImageView
         android:id="@+id/alarmIV"
@@ -21,7 +19,13 @@
         android:layout_marginRight="10dp"
         android:layout_marginTop="20dp"
         android:scaleType="fitXY"
-        android:src="@drawable/green_heart"/>
+        android:src="@drawable/blue_heart"/>
+    <ImageView
+        android:layout_width="78dp"
+        android:layout_height="87dp"
+        android:id="@+id/thermameterIV"
+        android:layout_centerInParent="true"
+        android:src="@drawable/thermameter1"/>
     <test.AndroidWearable.ArcProgress
         android:id="@+id/arc_progress"
         android:background="@android:color/transparent"
@@ -30,5 +34,28 @@
         android:layout_height="150dp"
         custom:arc_progress="0"
         custom:arc_bottom_text="MEMORY"/>
+
+
+    <!--<TextView-->
+    <!--android:layout_marginTop="170dp"-->
+    <!--android:layout_marginLeft="35dp"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:textSize="10sp"-->
+    <!--android:layout_alignParentLeft="true"-->
+    <!--android:textStyle="bold"-->
+    <!--android:id="@+id/minTV"-->
+    <!--/>-->
+
+    <!--<TextView-->
+    <!--android:id="@+id/maxTV"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:textSize="10sp"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_marginTop="170dp"-->
+    <!--android:layout_marginRight="35dp"-->
+    <!--android:textStyle="bold"-->
+    <!--/>-->
 
 </RelativeLayout>

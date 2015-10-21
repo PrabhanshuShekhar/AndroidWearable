@@ -311,9 +311,9 @@ public class ArcProgress extends View {
         paint.setColor(finishedStrokeColor);
         canvas.drawArc(rectF, finishedStartAngle, finishedSweepAngle, false, paint);
 
-        Bitmap kangoo = BitmapFactory.decodeResource(getResources(),
-                R.drawable.thermameter);
-        canvas.drawBitmap(kangoo, (getWidth()-kangoo.getWidth())/2.0f,(getHeight())/2.0f -kangoo.getHeight() , null);
+//        Bitmap kangoo = BitmapFactory.decodeResource(getResources(),
+//                R.drawable.thermameter);
+//        canvas.drawBitmap(kangoo, (getWidth()-kangoo.getWidth())/2.0f,(getHeight())/2.0f -kangoo.getHeight() , null);
 
 
         String text = String.valueOf(getProgress());
@@ -323,9 +323,9 @@ public class ArcProgress extends View {
             textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
             float textHeight = textPaint.descent() + textPaint.ascent();
 //            float textBaseline = (getHeight() - textHeight) / 2.0f;
-            if(isNegative)
-            text = "-"+ text+ (char) 0x00B0 + "C";
-            else
+//            if(isNegative)
+//            text = "-"+ text+ (char) 0x00B0 + "C";
+//            else
             text = text+ (char) 0x00B0 + "C";
             float textBaseline = getHeight() - arcBottomHeight - (textPaint.descent() + textPaint.ascent()) / 2;
             canvas.drawText(text, (getWidth() - textPaint.measureText(text)) / 2.0f, textBaseline, textPaint);

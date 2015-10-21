@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.view.WatchViewStub;
@@ -22,7 +23,7 @@ import java.util.TimerTask;
 public class MainActivity extends Activity  {
 
     Timer timer;
-    ImageView alarmIV;
+    ImageView alarmIV , thermameterIV;
     double set_T, actual_T, diff_T;
     TextView mTextView;
     ArcProgress arcProgress;
@@ -31,7 +32,7 @@ public class MainActivity extends Activity  {
     private BroadcastReceiver freezerTemperatureUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            System.out.println(">>>>>> receiver to update Temp UI");
+//            System.out.println(">>>>>> receiver to update Temp UI");
             actual_T = intent.getDoubleExtra("actual_T",0);
             set_T = intent.getDoubleExtra("set_T",0);
             diff_T = intent.getDoubleExtra("diff_T",0);
@@ -52,6 +53,7 @@ public class MainActivity extends Activity  {
                 arcProgress = (ArcProgress)stub.findViewById(R.id.arc_progress);
                 arcProgress.setBackgroundColor(Color.TRANSPARENT);
                 alarmIV = (ImageView)stub.findViewById(R.id.alarmIV);
+                thermameterIV = (ImageView)stub.findViewById(R.id.thermameterIV);
                 actual_T = getIntent().getDoubleExtra("actual_T",0);
                 set_T = getIntent().getDoubleExtra("set_T",0);
                 diff_T = getIntent().getDoubleExtra("diff_T",0);
@@ -59,31 +61,55 @@ public class MainActivity extends Activity  {
                     arcProgress.setNegative(true);
                 else
                     arcProgress.setNegative(false);
-//                mTextView.setText(""+currentTemp);
-                arcProgress.setMax(100);
-                arcProgress.setMin(-100);
-                arcProgress.setStrokeWidth(20);
-                arcProgress.setUnfinishedStrokeColor(Color.parseColor("#A9A9A9"));
-                arcProgress.setTextSize(20);
-                System.out.println(">>>>>> currentTemp :" + actual_T);
-                if (diff_T < 5.00) {
-                    System.out.println(">>>>> green color");
-                    arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.green_progress_color));
-                    arcProgress.setTextColor(getResources().getColor(R.color.green_temperature_color_code));
+                if(actual_T >= -85.00 && actual_T < -75.00)
+                {
+                    arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.blue_progress_color));
+                    arcProgress.setTextColor(getResources().getColor(R.color.blue_temperature_color_code));
                     alarmIV.setVisibility(View.VISIBLE);
-                    alarmIV.setImageResource(R.drawable.green_heart);
-                } else if (diff_T >= 5.00 && diff_T < 10.00) {
-                    System.out.println(">>>>>> yellow color");
+                    alarmIV.setImageResource(R.drawable.blue_heart);
+                    thermameterIV.setImageResource(R.drawable.thermameter1);
+                } else if(actual_T >= -75.00 && actual_T < -65.00)
+                {
                     arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.yellow_progress_color));
                     arcProgress.setTextColor(getResources().getColor(R.color.yellow_temperature_color_code));
                     alarmIV.setVisibility(View.VISIBLE);
-                    alarmIV.setImageResource(R.drawable.yellow_heart);
-                } else if (diff_T >= 10.00 ) {
-                    System.out.println(">>>>> red color");
+                    alarmIV.setImageResource(R.drawable.orange_heart);
+                    thermameterIV.setImageResource(R.drawable.thermameter2);
+                } else if(actual_T >= -65.00 )
+                {
                     arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.red_progress_color));
                     arcProgress.setTextColor(getResources().getColor(R.color.red_temperature_color_code));
                     alarmIV.setVisibility(View.VISIBLE);
                     alarmIV.setImageResource(R.drawable.red_heart);
+                    thermameterIV.setImageResource(R.drawable.thermameter3);
+                }
+//                mTextView.setText(""+currentTemp);
+                arcProgress.setMax(100);
+                arcProgress.setMin(-100);
+                arcProgress.setStrokeWidth(30);
+                arcProgress.setUnfinishedStrokeColor(Color.parseColor("#A9A9A9"));
+                arcProgress.setTextSize(30);
+//                System.out.println(">>>>>> currentTemp :" + actual_T);
+                if (diff_T < 5.00) {
+//                    System.out.println(">>>>> green color");
+//                    arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.green_progress_color));
+//                    arcProgress.setTextColor(getResources().getColor(R.color.green_temperature_color_code));
+//                    alarmIV.setVisibility(View.VISIBLE);
+//                    alarmIV.setImageResource(R.drawable.green_heart);
+                } else if (diff_T >= 5.00 && diff_T < 10.00) {
+//                    System.out.println(">>>>>> yellow color");
+//                    arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.yellow_progress_color));
+//                    arcProgress.setTextColor(getResources().getColor(R.color.yellow_temperature_color_code));
+//                    alarmIV.setVisibility(View.VISIBLE);
+                    imageBlink();
+//                    alarmIV.setImageResource(R.drawable.yellow_heart);
+                } else if (diff_T >= 10.00 ) {
+//                    System.out.println(">>>>> red color");
+//                    arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.red_progress_color));
+//                    arcProgress.setTextColor(getResources().getColor(R.color.red_temperature_color_code));
+//                    alarmIV.setVisibility(View.VISIBLE);
+//                    alarmIV.setImageResource(R.drawable.red_heart);
+                    imageBlink();
                 }
 
                 timer = new Timer();
@@ -112,34 +138,59 @@ public class MainActivity extends Activity  {
 
   void showView()
  {
-     System.out.println(">>>>> show View");
-//     if(actual_T < 0.0)
-//         arcProgress.setNegative(true);
-//     else
-//          arcProgress.setNegative(false);
-     arcProgress.setProgress(-100);
+//     System.out.println(">>>>> show View");
+     if(actual_T < 0.0)
+         arcProgress.setNegative(true);
+     else
+          arcProgress.setNegative(false);
+      arcProgress.setProgress(-100);
       alarmIV.clearAnimation();
-     System.out.println(">>>>>> actual_T :" + actual_T);
-     System.out.println(">>>> diff_t:"+diff_T);
-     if (diff_T < 5.00) {
-         System.out.println(">>>>> green color");
-         arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.green_progress_color));
-         arcProgress.setTextColor(getResources().getColor(R.color.green_temperature_color_code));
+//     System.out.println(">>>>>> actual_T :" + actual_T);
+//     System.out.println(">>>> diff_t:"+diff_T);
+
+     if(actual_T >= -85.00 && actual_T < -75.00)
+     {
+         arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.blue_progress_color));
+         arcProgress.setTextColor(getResources().getColor(R.color.blue_temperature_color_code));
          alarmIV.setVisibility(View.VISIBLE);
-         alarmIV.setImageResource(R.drawable.green_heart);
-     } else if (diff_T >= 5.00 && diff_T <= 10.00) {
-         System.out.println(">>>>>> yellow color");
+         alarmIV.setImageResource(R.drawable.blue_heart);
+         thermameterIV.setImageResource(R.drawable.thermameter1);
+     } else if(actual_T >= -75.00 && actual_T < -65.00)
+     {
          arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.yellow_progress_color));
          arcProgress.setTextColor(getResources().getColor(R.color.yellow_temperature_color_code));
          alarmIV.setVisibility(View.VISIBLE);
-         alarmIV.setImageResource(R.drawable.yellow_heart);
-         imageBlink();
-     } else if (diff_T >= 10.00) {
-         System.out.println(">>>>> red color");
+         alarmIV.setImageResource(R.drawable.orange_heart);
+         thermameterIV.setImageResource(R.drawable.thermameter2);
+     } else if(actual_T >= -65.00 )
+     {
          arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.red_progress_color));
          arcProgress.setTextColor(getResources().getColor(R.color.red_temperature_color_code));
          alarmIV.setVisibility(View.VISIBLE);
          alarmIV.setImageResource(R.drawable.red_heart);
+         thermameterIV.setImageResource(R.drawable.thermameter3);
+     }
+
+
+     if (diff_T < 5.00) {
+//         System.out.println(">>>>> green color");
+//         arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.green_progress_color));
+//         arcProgress.setTextColor(getResources().getColor(R.color.green_temperature_color_code));
+//         alarmIV.setVisibility(View.VISIBLE);
+//         alarmIV.setImageResource(R.drawable.green_heart);
+     } else if (diff_T >= 5.00 && diff_T <= 10.00) {
+//         System.out.println(">>>>>> yellow color");
+//         arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.yellow_progress_color));
+//         arcProgress.setTextColor(getResources().getColor(R.color.yellow_temperature_color_code));
+//         alarmIV.setVisibility(View.VISIBLE);
+//         alarmIV.setImageResource(R.drawable.yellow_heart);
+         imageBlink();
+     } else if (diff_T >= 10.00) {
+//         System.out.println(">>>>> red color");
+//         arcProgress.setFinishedStrokeColor(getResources().getColor(R.color.red_progress_color));
+//         arcProgress.setTextColor(getResources().getColor(R.color.red_temperature_color_code));
+//         alarmIV.setVisibility(View.VISIBLE);
+//         alarmIV.setImageResource(R.drawable.red_heart);
          imageBlink();
      }
 

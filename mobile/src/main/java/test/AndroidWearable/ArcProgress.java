@@ -315,9 +315,9 @@ public class ArcProgress extends View {
         System.out.println(">>>>>> start angle:"+startAngle);
         System.out.println(">>>>>> finishedStartAngle:"+finishedStartAngle);
         System.out.println(">>>>>> finishedSwipeAngle:"+finishedSweepAngle);
-        Bitmap kangoo = BitmapFactory.decodeResource(getResources(),
-                R.drawable.thermameter);
-        canvas.drawBitmap(kangoo, (getWidth()-kangoo.getWidth())/2.0f,(getHeight())/2.0f -kangoo.getHeight() , null);
+//        Bitmap kangoo = BitmapFactory.decodeResource(getResources(),
+//                R.drawable.thermameter);
+//        canvas.drawBitmap(kangoo, (getWidth()-kangoo.getWidth())/2.0f,(getHeight())/2.0f -kangoo.getHeight() , null);
 
 //       try {
 //          wait();
